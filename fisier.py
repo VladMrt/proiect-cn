@@ -1,1 +1,0 @@
-print("buna siua cuaie")
