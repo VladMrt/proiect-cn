@@ -100,10 +100,8 @@ def valori_proprii_qr(A, iteratii=1000, tol=1e-10):
         Q, R = descompunere_qr(Ak)
         Ak = inmultire_matrici(R, Q)
 
-        suma_off = 0.0
-        for i in range(1, n):
-            for j in range(i):
-                suma_off += Ak[i][j] ** 2
+        # Verificam doar suma elementelor sub-diagonale
+        suma_off = sum(Ak[i][j] ** 2 for i in range(1, n) for j in range(i))
         if suma_off < tol:
             break
 
@@ -143,29 +141,49 @@ def calculeaza_vectori_proprii(A, valori_proprii, iteratii=1000, tol=1e-12):
     # Transpunem: V[i][j] = componenta i a vectorului propriu j
     return [[V[j][i] for j in range(len(V))] for i in range(n)]
 
-def svd(A):
+def svd(A, k=None):
     m, n = len(A), len(A[0])
+    r = min(m, n)
+    if k is None:
+        k = r
+
     At = transpusa(A)
- 
-    # valorile singulare
-    AtA = inmultire_matrici(At, A)
-    val_proprii = valori_proprii_qr(AtA)
-    val_proprii.sort(reverse=True)
-    valori_singulare = [round(radical(modul(x)), 10) for x in val_proprii] 
-    # coloanele lui V = vectorii proprii ai A^T * A
-    V = calculeaza_vectori_proprii(AtA, val_proprii)
- 
-    # coloanele lui U = A*v_i / sigma_i
+
+    # Alegem matricea mai mica: daca m >> n, AtA e n x n (mai mica)
+    if m >= n:
+        AtA = inmultire_matrici(At, A)          # n x n
+        val_proprii = valori_proprii_qr(AtA, iteratii=200, tol=1e-9)
+        val_proprii.sort(reverse=True)
+        val_proprii = val_proprii[:k]           # doar primele k
+        valori_singulare = [round((modul(x)) ** 0.5, 10) for x in val_proprii]
+        V = calculeaza_vectori_proprii(AtA, val_proprii, iteratii=200, tol=1e-9)
+        mat_mica = AtA
+    else:
+        AAt = inmultire_matrici(A, At)          # m x m
+        val_proprii = valori_proprii_qr(AAt, iteratii=200, tol=1e-9)
+        val_proprii.sort(reverse=True)
+        val_proprii = val_proprii[:k]
+        valori_singulare = [round((modul(x)) ** 0.5, 10) for x in val_proprii]
+        V = calculeaza_vectori_proprii(AAt, val_proprii, iteratii=200, tol=1e-9)
+        mat_mica = AAt
+
+    # Coloanele lui U = A*v_i / sigma_i  (sau A^T * u_i / sigma_i)
     U = []
     for i in range(len(valori_singulare)):
         if valori_singulare[i] > 1e-12:
-            Av = [sum(A[r][c] * V[c][i] for c in range(n)) for r in range(m)]
-            norma = norma_vector(Av)
-            U.append([x / norma for x in Av])
+            if m >= n:
+                Av = [sum(A[r][c] * V[c][i] for c in range(n)) for r in range(m)]
+            else:
+                # V contine vectorii proprii ai AAt, deci sunt vectori U
+                # reconstructim V din U: V = A^T * u / sigma
+                Av = [sum(At[r][c] * V[c][i] for c in range(m)) for r in range(n)]
+            nrm = sum(x * x for x in Av) ** 0.5
+            U.append([x / nrm for x in Av])
         else:
             u = [0.0] * m
-            u[len(U)] = 1.0
+            if len(U) < m:
+                u[len(U)] = 1.0
             U.append(u)
- 
-    U = transpusa(U)  # am construit U pe linii, il transpunem ca coloanele sa fie vectori
+
+    U = transpusa(U)
     return U, valori_singulare, V
