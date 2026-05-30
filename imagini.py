@@ -7,7 +7,7 @@ def incarca_date_mnist(path_fisier, limita_imagini_per_cifra=50):
 
     with open(path_fisier, 'r') as f:
         # Trecem peste antet daca fisierul CSV are unul
-        next(f, None) 
+        next(f) 
         
         for linie in f:
             valori = linie.strip().split(',')

@@ -3,12 +3,12 @@ import svd
 import matplotlib.pyplot as plt
  
 A = [[3, 1], [1, 3]]
-k = 20
+k = 30
 baze_cifre = {}
-date_antrenare = img.incarca_date_mnist("mnist_train.csv",20)
+date_antrenare = img.incarca_date_mnist("mnist_train.csv",30)
 for cifra in range(10):
     A_cifra = date_antrenare[cifra]
-    U, sigma, V = svd.svd(A_cifra, k)
+    U, sigma, V = svd.svd(A_cifra, 30)
 
     # Reconstruieste prima imagine din A cu k componente
     reconstructie = [0.0] * 784
