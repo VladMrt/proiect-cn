@@ -1,11 +1,13 @@
 import imagini as img
 import svd
 import matplotlib.pyplot as plt
+import svd_numpy as svd_np
  
 A = [[3, 1], [1, 3]]
-k = 30
+k = 20
 baze_cifre = {}
 date_antrenare = img.incarca_date_mnist("mnist_train.csv",30)
+plt.figure(figsize=(18, 5))
 for cifra in range(10):
     A_cifra = date_antrenare[cifra]
     U, sigma, V = svd.svd(A_cifra, 30)
@@ -19,9 +21,14 @@ for cifra in range(10):
             reconstructie[i] += sigma[j] * u_j[i] * v_0j
 
     imagine = [reconstructie[r*28:(r+1)*28] for r in range(28)]
+    plt.subplot(1,10,cifra+1)
     plt.imshow(imagine, cmap="gray")
-    plt.title(f"Cifra {cifra} reconstruita cu k={k}")
-    plt.show()
+    if(cifra == 5):
+        plt.title(f"Fara np k={k}")
 
 
+
+svd_np.svd_numpy()
+plt.tight_layout()
+plt.show()
 print("S-a gatat codu sefule")
