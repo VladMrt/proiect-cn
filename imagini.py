@@ -1,3 +1,4 @@
+import random
 
 def incarca_date_mnist(path_fisier, limita_imagini_per_cifra=50):
     # Dictionar pentru a stoca matricea A pentru fiecare cifră
@@ -39,3 +40,16 @@ def incarca_date_mnist(path_fisier, limita_imagini_per_cifra=50):
         matrici_clase[cifra] = A_final
 
     return matrici_clase
+
+def citeste_random_n(path, n=25):
+    toate = []
+    with open(path, "r") as f:
+        next(f)
+        for linie in f:
+            valori = linie.strip().split(',')
+            if len(valori) < 785:
+                continue
+            cifra_reala = int(valori[0])
+            imagine_vec = [float(p) / 255.0 for p in valori[1:]]
+            toate.append((cifra_reala, imagine_vec))
+    return random.sample(toate, n)

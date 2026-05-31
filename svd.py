@@ -107,38 +107,51 @@ def valori_proprii_qr(A, iteratii=1000, tol=1e-10):
 
     return [Ak[i][i] for i in range(n)]
 
-def calculeaza_vectori_proprii(A, valori_proprii, iteratii=1000, tol=1e-12):
+def calculeaza_vectori_proprii(A, valori_proprii, iteratii=100, tol=1e-9):
     n = len(A)
     V = []
- 
-    for lam in valori_proprii:
-        v = [1.0 / radical(n)] * n  # vector initial uniform normalizat
-        shift = lam + 1e-9          # shift mic pentru a evita singularitatea exacta a lui (A - lam*I)
- 
+
+    # Copie deflata a lui A
+    Adef = [row[:] for row in A]
+
+    for _ in range(len(valori_proprii)):
+        # Vector initial
+        v = [1.0 / (i + 2) for i in range(n)]
+        nrm = sum(x*x for x in v) ** 0.5
+        v = [x / nrm for x in v]
+
+        lam = 0.0
         for _ in range(iteratii):
-            # Construim (A - shift*I) si rezolvam sistemul pentru a aplica inversa
-            B = [[A[i][j] - (shift if i == j else 0.0) for j in range(n)] for i in range(n)]
-            w = rezolva_sistem(B, v)
-            norma = norma_vector(w)
-            if norma < tol:
+            # w = Adef * v
+            w = [sum(Adef[i][j] * v[j] for j in range(n)) for i in range(n)]
+            lam_nou = sum(v[i] * w[i] for i in range(n))
+            nrm = sum(x*x for x in w) ** 0.5
+            if nrm < 1e-14:
                 break
-            v_nou = [x / norma for x in w]
-            # Criteriu de convergenta: vectorul nu se mai schimba semnificativ
-            diff = sum((v_nou[k] - v[k]) ** 2 for k in range(n))
+            v_nou = [x / nrm for x in w]
+            diff = sum((v_nou[i] - v[i])**2 for i in range(n))
+            lam = lam_nou
             v = v_nou
             if diff < tol:
                 break
- 
-        # Gram-Schmidt
+
+        # Gram-Schmidt fata de vectorii deja gasiti
         for vj in V:
-            coef = sum(v[k] * vj[k] for k in range(n))
-            v = [v[k] - coef * vj[k] for k in range(n)]
-        norma = norma_vector(v)
-        v = [x / norma for x in v] if norma > tol else v
- 
+            coef = sum(v[i] * vj[i] for i in range(n))
+            v = [v[i] - coef * vj[i] for i in range(n)]
+        nrm = sum(x*x for x in v) ** 0.5
+        if nrm < 1e-12:
+            v = [0.0] * n
+        else:
+            v = [x / nrm for x in v]
+
         V.append(v)
- 
-    # Transpunem: V[i][j] = componenta i a vectorului propriu j
+
+        # Deflatie: Adef = Adef - lam * v * v^T
+        for i in range(n):
+            for j in range(n):
+                Adef[i][j] -= lam * v[i] * v[j]
+
     return [[V[j][i] for j in range(len(V))] for i in range(n)]
 
 def svd(A, k=None):
