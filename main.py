@@ -23,6 +23,29 @@ def proiecteaza(imagine_vector, U_baza):
     distanta = sum((imagine_vector[i] - proiectie[i]) ** 2 for i in range(m)) ** 0.5
     return distanta
 
+def afiseaza_baze_svd(baze_cifre, componenta=0):
+    fig, axes = plt.subplots(2, 5, figsize=(10, 4))
+
+    for cifra in range(10):
+        U = baze_cifre[cifra]
+
+        # coloana "componenta" din U
+        eigen_digit = [U[i][componenta] for i in range(len(U))]
+
+        # transformare 784 -> 28x28
+        imagine = [
+            eigen_digit[r*28:(r+1)*28]
+            for r in range(28)
+        ]
+
+        ax = axes[cifra // 5][cifra % 5]
+        ax.imshow(imagine, cmap="gray")
+        ax.set_title(f"Cifra {cifra}")
+        ax.axis("off")
+
+    plt.suptitle(f"Cifrele de referinta")
+    plt.tight_layout()
+    plt.show()
 
 # ── 1. Antrenare ──────────────────────────────────────────────────────────────
 print("Antrenare SVD...")
@@ -38,6 +61,8 @@ for cifra in range(10):
     baze_cifre[cifra] = U   # 784 x k
 
 print(f"Antrenare terminata in {time.time() - start:.1f}s")
+
+afiseaza_baze_svd(baze_cifre)
 
 
 # ── 2. Testare ────────────────────────────────────────────────────────────────

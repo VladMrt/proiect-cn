@@ -124,7 +124,7 @@ def calculeaza_vectori_proprii(A, valori_proprii, iteratii=100, tol=1e-9):
         for _ in range(iteratii):
             # w = Adef * v
             w = [sum(Adef[i][j] * v[j] for j in range(n)) for i in range(n)]
-            lam_nou = sum(v[i] * w[i] for i in range(n))
+            lam_nou = sum(v[i] * w[i] for i in range(n)) #coeficientul rayleigh
             nrm = sum(x*x for x in w) ** 0.5
             if nrm < 1e-14:
                 break
@@ -170,7 +170,6 @@ def svd(A, k=None):
         val_proprii = val_proprii[:k]           # doar primele k
         valori_singulare = [round((modul(x)) ** 0.5, 10) for x in val_proprii]
         V = calculeaza_vectori_proprii(AtA, val_proprii, iteratii=200, tol=1e-9)
-        mat_mica = AtA
     else:
         AAt = inmultire_matrici(A, At)          # m x m
         val_proprii = valori_proprii_qr(AAt, iteratii=200, tol=1e-9)
@@ -178,7 +177,6 @@ def svd(A, k=None):
         val_proprii = val_proprii[:k]
         valori_singulare = [round((modul(x)) ** 0.5, 10) for x in val_proprii]
         V = calculeaza_vectori_proprii(AAt, val_proprii, iteratii=200, tol=1e-9)
-        mat_mica = AAt
 
     # Coloanele lui U = A*v_i / sigma_i  (sau A^T * u_i / sigma_i)
     U = []
